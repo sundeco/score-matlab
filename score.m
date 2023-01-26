@@ -9,5 +9,5 @@ function grad = score(x, net, overlaparr, overlap, psize)
             grad = grad + GcT(sV, i, j, psize, lsize);
         end
     end
-    grad = -grad./overlaparr;
+    grad = -grad;%./overlaparr;
 end

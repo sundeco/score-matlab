@@ -82,7 +82,7 @@ trainy = reshape(output, psize^2, totalPts);
 clean = squeeze(y(:,:,1));
 noisy = clean + sigma * randn(lsize, lsize);
 xk = noisy;
-alpha = 0.001; %is there a better way to choose this parameter?
+alpha = 0.0001; %is there a better way to choose this parameter?
 overlap = 1;
 overlaparr = getDivision(lsize, psize, overlap);
 iters = 1000;
@@ -90,9 +90,10 @@ images = zeros(iters, lsize, lsize);
 lastpsnr = 0;
 for i = 1:iters
     images(i,:,:) = xk;
-    xk = xk + alpha * ((noisy-xk)/sigma^2 + score(xk, net, overlaparr, overlap, psize)/sigma);
+    xk = xk + alpha * ((noisy-xk)/sigma^2 - score(xk, net, overlaparr, overlap, psize)/sigma);
     curpsnr = psnr(squeeze(images(i,:,:)), clean)
-    if abs(curpsnr-lastpsnr) < 0.02
+    figure(1)
+    %if abs(curpsnr-lastpsnr) < 0.02
         %images(i+1,:,:) = xk;
         subplot(1,2,1);
         imshow(squeeze(images(1,:,:)))
@@ -102,9 +103,15 @@ for i = 1:iters
         title('Denoised image')
         pause(0.1)
         %scale the output image affinely, turns out it's unnecessary
-        %realout = findScale(squeeze(images(7,:,:)), clean);
+        %realout = findScale(squeeze(images(1,:,:)), clean);
         %psnr(realout, clean)
         %break
+    %end
+    if abs(curpsnr-lastpsnr) < 0.02 || lastpsnr > curpsnr
+        realout = findScale(xk, clean);
+        bestPSNR = psnr(realout, clean)
+        bestSNR = snr(realout, realout-clean)
+        break
     end
     lastpsnr = curpsnr;
 end
