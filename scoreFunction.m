@@ -25,7 +25,7 @@ end
 
 %for each x (a patch), i have the outer loop p(x) 
 %i want to generate the inner loop xhat corresponding to adding noise 
-sigma = 0.05;
+sigma = 0.01;
 imPerPatch = 10;
 input = zeros(psize, psize, patchesPerImage * numimages * imPerPatch);
 output = input; 
@@ -80,9 +80,10 @@ trainy = reshape(output, psize^2, totalPts);
 %take a clean image and add noise, then begin gradient descent to find MAP
 %estimate 
 clean = squeeze(y(:,:,1));
+sigma = 0.05;
 noisy = clean + sigma * randn(lsize, lsize);
 xk = noisy;
-alpha = 0.0001; %is there a better way to choose this parameter?
+alpha = 0.00005; %is there a better way to choose this parameter?
 overlap = 1;
 overlaparr = getDivision(lsize, psize, overlap);
 iters = 1000;
@@ -91,7 +92,8 @@ lastpsnr = 0;
 for i = 1:iters
     images(i,:,:) = xk;
     xk = xk + alpha * ((noisy-xk)/sigma^2 - score(xk, net, overlaparr, overlap, psize)/sigma);
-    curpsnr = psnr(squeeze(images(i,:,:)), clean)
+    %xk = findScale(xk, clean);
+    curpsnr = psnr(xk, clean)
     figure(1)
     %if abs(curpsnr-lastpsnr) < 0.02
         %images(i+1,:,:) = xk;
